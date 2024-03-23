@@ -51,7 +51,7 @@ pageextension 80302 VendLedgerEntryExt extends "Vendor Ledger Entries"
                             VendorSVATSettelment."Entry No" := EntryNo;
                             VendorSVATSettelment."Posting Date" := VendorLedgerEntry."Posting Date";
                             VendorSVATSettelment."Docuemnt Date" := VendorLedgerEntry."Document Date";
-                            //VendorSVATSettelment."Document Type" := VendorLedgerEntry."Document Type";
+                            VendorSVATSettelment."Document Type" := Format(VendorLedgerEntry."Document Type");
                             VendorSVATSettelment."Docuemt No" := VendorLedgerEntry."Document No.";
                             VendorSVATSettelment."Vendor No" := VendorLedgerEntry."Vendor No.";
                             VendorSVATSettelment."Vendor Name" := VendorLedgerEntry."Vendor Name";

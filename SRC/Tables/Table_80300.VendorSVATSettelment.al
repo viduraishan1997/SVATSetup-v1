@@ -19,12 +19,11 @@ table 80300 "Vendor SVAT Settelment"
             Editable = false;
             DataClassification = ToBeClassified;
         }
-        // field(4; "Document Type"; Option)
-        // {
-        //     Editable = false;
-        //     DataClassification = ToBeClassified;
-        //     OptionMembers = "","Payment","Invoice","Credit Memo","Finance Charge Memo","Reminder","Refund";
-        // }
+        field(4; "Document Type"; Text[20])
+        {
+            Editable = false;
+            DataClassification = ToBeClassified;
+        }
         field(5; "Docuemt No"; Code[20])
         {
             Editable = false;

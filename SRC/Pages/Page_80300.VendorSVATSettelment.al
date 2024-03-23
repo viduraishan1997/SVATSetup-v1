@@ -23,10 +23,10 @@ page 80300 "Vendor SVAT Settelment"
                 {
                     ApplicationArea = All;
                 }
-                // field("Document Type"; Rec."Document Type")
-                // {
-                //     ApplicationArea = All;
-                // }
+                field("Document Type"; Rec."Document Type")
+                {
+                    ApplicationArea = All;
+                }
                 field("Docuemt No"; Rec."Docuemt No")
                 {
                     ApplicationArea = All;

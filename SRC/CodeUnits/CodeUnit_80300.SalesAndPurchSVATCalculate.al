@@ -12,20 +12,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if PurchHeader.FindFirst() then
             VendorLedgerEntry."Calculated SVAT amount" := PurchHeader."Calculated SVAT amount";
     end;
-    // Calculate SVAT Amount in Posted Purchase Invoice 
-    // [EventSubscriber(ObjectType::Table, Database::"Purch. Inv. Header", 'OnAfterModifyEvent', '', false, false)]
-    // local procedure GetSVATAmountPostedPurchInvoice(var Rec: Record "Purch. Inv. Header")
-    // var
-    //     PurchHeader: Record "Purchase Header";
-    // begin
-    //     PurchHeader.SetRange("No.", Rec."Order No.");
-    //     if PurchHeader.FindFirst() then begin
-    //         Rec."Calculated SVAT Amount" := PurchHeader."Calculated SVAT amount";
-    //         // test
-    //         Rec."Test Value" := 10;
-    //         Rec.Modify(true);
-    //     end;
-    // end;
+
 
     // Calculate SVAT Amount in Posted Purchase Invoice 
     [EventSubscriber(ObjectType::Table, Database::"Purchase Header", 'OnAfterModifyEvent', '', false, false)]
@@ -52,7 +39,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         GenLedgerSetup.Get();
         GenLedgerSetup.TestField("SVAT Code");
-        TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+        TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
         if TaxDetails.FindFirst() then
             SVATC := TaxDetails."Tax Group Code";
         PurchLine.SetRange("Document Type", Rec."Document Type");
@@ -63,6 +50,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
             PurchLineAmountTotal := 0;
             repeat
                 //if (PurchLine."Tax Liable" = true) and (PurchLine."Tax Group Code" = SVATC) then
+                //Use Amount LCY better field "Outstanding Amt. Ex. VAT (LCY)"
                 PurchLineAmountTotal += PurchLine.Amount;
             until PurchLine.Next() = 0;
         end;
@@ -71,7 +59,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if PurchHeader.FindFirst() then begin
             GenLedgerSetup.Get();
             GenLedgerSetup.TestField("SVAT Code");
-            TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+            TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
             if TaxDetails.FindFirst() then begin
                 PurchHeader."Calculated SVAT amount" := PurchLineAmountTotal * TaxDetails."SVAT %" / 100;
                 PurchHeader.Modify(true)
@@ -91,7 +79,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         GenLedgerSetup.Get();
         GenLedgerSetup.TestField("SVAT Code");
-        TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+        TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
         if TaxDetails.FindFirst() then
             SVATC := TaxDetails."Tax Group Code";
         PurchLine.SetRange("Document Type", Rec."Document Type");
@@ -102,6 +90,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
             PurchLineAmountTotal := 0;
             repeat
                 //if (PurchLine."Tax Liable" = true) and (PurchLine."Tax Group Code" = SVATC) then
+                //Use Amount LCY better field "Outstanding Amt. Ex. VAT (LCY)"
                 PurchLineAmountTotal += PurchLine.Amount;
             until PurchLine.Next() = 0;
         end;
@@ -110,13 +99,16 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if PurchHeader.FindFirst() then begin
             GenLedgerSetup.Get();
             GenLedgerSetup.TestField("SVAT Code");
-            TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+            TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
             if TaxDetails.FindFirst() then begin
                 PurchHeader."Calculated SVAT amount" := PurchLineAmountTotal * TaxDetails."SVAT %" / 100;
                 PurchHeader.Modify(true)
             end;
         end;
     end;
+
+    //-----------------------------------Sales ------------------------------------------------------
+
     // Calculate SVAT Amount in Customer Ledger Entry
     [EventSubscriber(ObjectType::Table, Database::"Cust. Ledger Entry", 'OnAfterCopyCustLedgerEntryFromGenJnlLine', '', false, false)]
     local procedure OnAfterCopyCustLedgerEntryFromGenJnlLine(var CustLedgerEntry: Record "Cust. Ledger Entry"; GenJournalLine: Record "Gen. Journal Line");
@@ -128,6 +120,29 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if SalesHeader.FindFirst() then
             CustLedgerEntry."Calculated SVAT amount" := SalesHeader."Calculated SVAT amount";
     end;
+    // Calculate SVAT Amount in Posted Sales Invoice 
+    [EventSubscriber(ObjectType::Table, Database::"Sales Invoice Header", 'OnBeforeModifyEvent', '', false, false)]
+    local procedure MyProcedure(var Rec: Record "Sales Invoice Header")
+    var
+        SalesInvoice_Order: Record "Sales Header";
+    begin
+        SalesInvoice_Order.SetRange("No.", Rec."Pre-Assigned No.");
+        if SalesInvoice_Order.FindFirst() then
+            Rec."Calculated SVAT Amount1" := SalesInvoice_Order."Calculated SVAT amount";
+    end;
+    // [EventSubscriber(ObjectType::Table, Database::"Sales Header", 'OnAfterInsertEvent', '', false, false)]
+    // local procedure GetSVATAmountPostedSalesInvoice(var Rec: Record "Sales Header")
+    // var
+    //     PostSalesInvoice: Record "Sales Invoice Header";
+    // begin
+
+    //     PostSalesInvoice.SetRange("Pre-Assigned No.", Rec."No.");
+    //     if PostSalesInvoice.FindFirst() then begin
+    //         Message('%1', Rec."Calculated SVAT amount");
+    //         PostSalesInvoice."Calculated SVAT Amount1" := Rec."Calculated SVAT amount";
+    //         PostSalesInvoice.Modify(true);
+    //     end;
+    // end;
     // Calculate SVAT Amount in the Sales Order Invoice Card Page
     [EventSubscriber(ObjectType::Table, Database::"Sales Line", 'OnAfterModifyEvent', '', false, false)]
     local procedure CalculatedSVATAmountSalesHeader(var Rec: Record "Sales Line"; var xRec: Record "Sales Line")
@@ -142,7 +157,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         GenLedgerSetup.Get();
         GenLedgerSetup.TestField("SVAT Code");
-        TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+        TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
         if TaxDetails.FindFirst() then
             SVATC := TaxDetails."Tax Group Code";
         SalesLine.SetRange("Document Type", Rec."Document Type");
@@ -161,7 +176,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if SalesHeader.FindFirst() then begin
             GenLedgerSetup.Get();
             GenLedgerSetup.TestField("SVAT Code");
-            TaxDetails.SetRange("Tax Group Code", GenLedgerSetup."SVAT Code");
+            TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
             if TaxDetails.FindFirst() then begin
                 SalesHeader."Calculated SVAT amount" := SalesLineLineAmountTotal * TaxDetails."SVAT %" / 100;
                 SalesHeader.Modify(true);

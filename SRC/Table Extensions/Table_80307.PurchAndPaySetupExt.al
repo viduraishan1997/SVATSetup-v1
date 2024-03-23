@@ -1,4 +1,4 @@
-tableextension 80307 MyExtension extends "Purchases & Payables Setup"
+tableextension 80307 PurchAndPaySetExt extends "Purchases & Payables Setup"
 {
     fields
     {
