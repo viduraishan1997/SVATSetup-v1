@@ -93,6 +93,7 @@ page 80300 "Vendor SVAT Settelment"
                     end;
                 end;
             }
+            // Add Apply Entry Action
             action("Apply Entry")
             {
                 ApplicationArea = All;
