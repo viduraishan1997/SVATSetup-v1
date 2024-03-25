@@ -68,7 +68,4 @@ pageextension 80302 VendLedgerEntryExt extends "Vendor Ledger Entries"
             }
         }
     }
-
-    var
-        myInt: Integer;
 }

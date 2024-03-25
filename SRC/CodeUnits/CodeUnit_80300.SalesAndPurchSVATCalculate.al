@@ -1,31 +1,28 @@
 codeunit 80300 SalesAndPurchSVATCalculate
 {
-    // Calculate SVAT Amount in Vendor Ledger Entry PurchasOrderInvoiceSubscriber
-    [EventSubscriber(ObjectType::Table, Database::"Vendor Ledger Entry", 'OnAfterCopyVendLedgerEntryFromGenJnlLine', '', false, false)]
-    local procedure OnAfterCopyVendLedgerEntryFromGenJnlLine(var VendorLedgerEntry: Record "Vendor Ledger Entry"; GenJournalLine: Record "Gen. Journal Line");
+    //Calculate SVAT Amount in Vendor Ledger Entry 
+    [EventSubscriber(ObjectType::Table, Database::"Purch. Inv. Header", 'OnAfterModifyEvent', '', false, false)]
+    local procedure OnAfterCopyVendLedgerEntryFromGenJnlLine(var Rec: Record "Purch. Inv. Header")
     var
-        PurchHeader: Record "Purchase Header";
+        VendorLedgerEntry: Record "Vendor Ledger Entry";
     begin
-        PurchHeader.SetRange("Posting Date", GenJournalLine."Posting Date");
-
-        PurchHeader.SetRange("Buy-from Vendor No.", GenJournalLine."Account No.");
-        if PurchHeader.FindFirst() then
-            VendorLedgerEntry."Calculated SVAT amount" := PurchHeader."Calculated SVAT amount";
-    end;
-
-
-    // Calculate SVAT Amount in Posted Purchase Invoice 
-    [EventSubscriber(ObjectType::Table, Database::"Purchase Header", 'OnAfterModifyEvent', '', false, false)]
-    local procedure GetSVATAmountPostedPurchInvoice(var Rec: Record "Purchase Header")
-    var
-        PostPurchInvoice: Record "Purch. Inv. Header";
-    begin
-        PostPurchInvoice.SetRange("Order No.", Rec."No.");
-        if PostPurchInvoice.FindFirst() then begin
-            PostPurchInvoice."Calculated SVAT Amount" := Rec."Calculated SVAT amount";
+        VendorLedgerEntry.SetRange("Document No.", Rec."No.");
+        if VendorLedgerEntry.FindFirst() then begin
+            VendorLedgerEntry."Calculated SVAT amount" := Rec."Calculated SVAT Amount";
+            VendorLedgerEntry.Modify(true);
         end;
     end;
 
+    // Calculate SVAT Amount in Posted Purchase Invoice 
+    [EventSubscriber(ObjectType::Table, Database::"Purch. Inv. Header", 'OnAfterModifyEvent', '', false, false)]
+    local procedure GetSVATAmountPostedPurchInvoice(var Rec: Record "Purch. Inv. Header")
+    var
+        PurchHeader: Record "Purchase Header";
+    begin
+        PurchHeader.SetRange("No.", Rec."Order No.");
+        if PurchHeader.FindFirst() then
+            Rec."Calculated SVAT Amount" := PurchHeader."Calculated SVAT amount";
+    end;
     // Calculate SVAT Amount in the Purchase Order invoice Card Page
     [EventSubscriber(ObjectType::Table, Database::"Purchase Line", 'OnAfterModifyEvent', '', false, false)]
     local procedure CalculatedSVATAmountPurchHeader(var Rec: Record "Purchase Line"; var xRec: Record "Purchase Line")
@@ -49,8 +46,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if PurchLine.FindSet() then begin
             PurchLineAmountTotal := 0;
             repeat
-                //if (PurchLine."Tax Liable" = true) and (PurchLine."Tax Group Code" = SVATC) then
-                //Use Amount LCY better field "Outstanding Amt. Ex. VAT (LCY)"
+                //Use Amount LCY better field "Outstanding Amt. Ex. VAT (LCY)" Amount
                 PurchLineAmountTotal += PurchLine.Amount;
             until PurchLine.Next() = 0;
         end;
@@ -89,7 +85,6 @@ codeunit 80300 SalesAndPurchSVATCalculate
         if PurchLine.FindSet() then begin
             PurchLineAmountTotal := 0;
             repeat
-                //if (PurchLine."Tax Liable" = true) and (PurchLine."Tax Group Code" = SVATC) then
                 //Use Amount LCY better field "Outstanding Amt. Ex. VAT (LCY)"
                 PurchLineAmountTotal += PurchLine.Amount;
             until PurchLine.Next() = 0;
@@ -110,25 +105,36 @@ codeunit 80300 SalesAndPurchSVATCalculate
     //-----------------------------------Sales ------------------------------------------------------
 
     // Calculate SVAT Amount in Customer Ledger Entry
-    [EventSubscriber(ObjectType::Table, Database::"Cust. Ledger Entry", 'OnAfterCopyCustLedgerEntryFromGenJnlLine', '', false, false)]
-    local procedure OnAfterCopyCustLedgerEntryFromGenJnlLine(var CustLedgerEntry: Record "Cust. Ledger Entry"; GenJournalLine: Record "Gen. Journal Line");
+    [EventSubscriber(ObjectType::Table, Database::"Sales Invoice Header", 'OnAfterModifyEvent', '', false, false)]
+    local procedure CalculateSVATInCustomerLedger(var Rec: Record "Sales Invoice Header")
+    var
+        CustomerLedgerEntry: Record "Cust. Ledger Entry";
+    begin
+        CustomerLedgerEntry.SetRange("Document No.", Rec."No.");
+        if CustomerLedgerEntry.FindFirst() then begin
+            CustomerLedgerEntry."Calculated SVAT amount" := Rec."Calculated SVAT Amount1";
+            CustomerLedgerEntry.Modify(true);
+        end;
+    end;
+    // Calculate SVAT Amount in Posted Sales Invoice (Invoice)
+    [EventSubscriber(ObjectType::Table, Database::"Sales Invoice Header", 'OnBeforeModifyEvent', '', false, false)]
+    local procedure CalculateSVATAmountPostSaleInvoice(var Rec: Record "Sales Invoice Header")
     var
         SalesHeader: Record "Sales Header";
     begin
-        SalesHeader.SetRange("Posting Date", GenJournalLine."Posting Date");
-        SalesHeader.SetRange("Sell-to Customer No.", GenJournalLine."Account No.");
+        SalesHeader.SetRange("No.", Rec."Pre-Assigned No.");
         if SalesHeader.FindFirst() then
-            CustLedgerEntry."Calculated SVAT amount" := SalesHeader."Calculated SVAT amount";
+            Rec."Calculated SVAT Amount1" := SalesHeader."Calculated SVAT amount";
     end;
-    // Calculate SVAT Amount in Posted Sales Invoice 
+    // Calculate SVAT Amount in Posted Sales Invoice (Order)
     [EventSubscriber(ObjectType::Table, Database::"Sales Invoice Header", 'OnBeforeModifyEvent', '', false, false)]
-    local procedure MyProcedure(var Rec: Record "Sales Invoice Header")
+    local procedure CalculateSVATAmountPostSaleOrder(var Rec: Record "Sales Invoice Header")
     var
-        SalesInvoice_Order: Record "Sales Header";
+        SalesHeader: Record "Sales Header";
     begin
-        SalesInvoice_Order.SetRange("No.", Rec."Pre-Assigned No.");
-        if SalesInvoice_Order.FindFirst() then
-            Rec."Calculated SVAT Amount1" := SalesInvoice_Order."Calculated SVAT amount";
+        SalesHeader.SetRange("No.", Rec."Order No.");
+        if SalesHeader.FindFirst() then
+            Rec."Calculated SVAT Amount1" := SalesHeader."Calculated SVAT amount";
     end;
     // [EventSubscriber(ObjectType::Table, Database::"Sales Header", 'OnAfterInsertEvent', '', false, false)]
     // local procedure GetSVATAmountPostedSalesInvoice(var Rec: Record "Sales Header")
@@ -145,7 +151,48 @@ codeunit 80300 SalesAndPurchSVATCalculate
     // end;
     // Calculate SVAT Amount in the Sales Order Invoice Card Page
     [EventSubscriber(ObjectType::Table, Database::"Sales Line", 'OnAfterModifyEvent', '', false, false)]
-    local procedure CalculatedSVATAmountSalesHeader(var Rec: Record "Sales Line"; var xRec: Record "Sales Line")
+    local procedure CalculatedSVATAmountSalesHeader(var Rec: Record "Sales Line")
+    var
+        SalesHeader: Record "Sales Header";
+        SalesLine: Record "Sales Line";
+        TaxDetails: Record "Tax Detail";
+        GenLedgerSetup: Record "General Ledger Setup";
+        SalesLineLineAmountTotal: Decimal;
+        SVATC: Code[20];
+        Prcenta: Decimal;
+    begin
+        GenLedgerSetup.Get();
+        GenLedgerSetup.TestField("SVAT Code");
+        TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
+        if TaxDetails.FindFirst() then
+            SVATC := TaxDetails."Tax Group Code";
+        SalesLine.SetRange("Document Type", Rec."Document Type");
+        SalesLine.SetRange("Document No.", Rec."Document No.");
+        //SalesLine.SetFilter("Tax Liable", '%1', true);
+        SalesLine.SetFilter("Tax Group Code", '%1', SVATC);
+        if SalesLine.FindSet() then begin
+            SalesLineLineAmountTotal := 0;
+            repeat
+                //if (SalesLine."Tax Liable" = true) and (SalesLine."Tax Group Code" = SVATC) then
+                // Amount ,Line Amount
+                SalesLineLineAmountTotal += SalesLine."Line Amount";
+            until SalesLine.Next() = 0;
+        end;
+        SalesHeader.SetRange("Document Type", Rec."Document Type");
+        SalesHeader.SetRange("No.", Rec."Document No.");
+        if SalesHeader.FindFirst() then begin
+            GenLedgerSetup.Get();
+            GenLedgerSetup.TestField("SVAT Code");
+            TaxDetails.SetRange("Tax Jurisdiction Code", GenLedgerSetup."SVAT Code");
+            if TaxDetails.FindFirst() then begin
+                SalesHeader."Calculated SVAT amount" := SalesLineLineAmountTotal * TaxDetails."SVAT %" / 100;
+                SalesHeader.Modify(true);
+            end;
+        end;
+    end;
+    // Delete line in sales line
+    [EventSubscriber(ObjectType::Table, Database::"Sales Line", 'OnAfterDeleteEvent', '', false, false)]
+    local procedure DeleteSVATAmountSalesHeader(var Rec: Record "Sales Line")
     var
         SalesHeader: Record "Sales Header";
         SalesLine: Record "Sales Line";

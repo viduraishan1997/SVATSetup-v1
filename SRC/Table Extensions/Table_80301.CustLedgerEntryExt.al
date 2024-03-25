@@ -6,5 +6,13 @@ tableextension 80301 CustLedgerEntryExt extends "Cust. Ledger Entry"
         {
             DataClassification = ToBeClassified;
         }
+        field(10002; "SVAT Credit Voucher Created"; Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(10003; "SVAT Debit Voucher No."; Code[20])
+        {
+            DataClassification = ToBeClassified;
+        }
     }
 }
