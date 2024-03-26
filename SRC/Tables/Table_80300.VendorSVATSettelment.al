@@ -64,7 +64,7 @@ table 80300 "Vendor SVAT Settelment"
             Editable = false;
             DataClassification = CustomerContent;
         }
-        field(13; "No."; Code[20])
+        field(13; "SVAT Credit Voucher No."; Code[20])
         {
             Editable = false;
             DataClassification = ToBeClassified;
