@@ -97,6 +97,26 @@ page 80301 CustomerSVATSettelment
                             Message('User Are not Allowed to use this action');
                 end;
             }
+            action("Apply Entry")
+            {
+                ApplicationArea = All;
+                Image = ApplyEntries;
+                trigger OnAction()
+                var
+                    CustLedgerEntryRec, CustLedgerEntry : Record "Cust. Ledger Entry";
+                    CustLedgerEntryPage: Page "Customer Ledger Entries";
+                    CustEntryApplyPostEntries: Codeunit "CustEntry-Apply Posted Entries";
+                begin
+                    CustLedgerEntryRec.SetRange("Entry No.", Rec."Customer Ledger Entry no");
+                    if CustLedgerEntryRec.FindFirst() then begin
+                        CustLedgerEntry.Copy(CustLedgerEntryRec);
+                        CustEntryApplyPostEntries.ApplyCustEntryFormEntry(CustLedgerEntry);
+                        CustLedgerEntry.Get(CustLedgerEntry."Entry No.");
+                        CustLedgerEntryRec := CustLedgerEntry;
+                        CustLedgerEntryPage.Update();
+                    end;
+                end;
+            }
         }
     }
 }

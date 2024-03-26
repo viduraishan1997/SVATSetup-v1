@@ -104,7 +104,7 @@ page 80300 "Vendor SVAT Settelment"
                     VendorLedgerEntryPage: Page "Vendor Ledger Entries";
                     VendEntryApplyPostEntries: Codeunit "VendEntry-Apply Posted Entries";
                 begin
-                    VendLedgEntryRec.SetRange("Entry No.", Rec."Entry No");
+                    VendLedgEntryRec.SetRange("Entry No.", Rec."Vendor Ledger Entry no");
                     if VendLedgEntryRec.FindFirst() then begin
                         VendorLedgerEntry.Copy(VendLedgEntryRec);
                         VendEntryApplyPostEntries.ApplyVendEntryFormEntry(VendorLedgerEntry);
