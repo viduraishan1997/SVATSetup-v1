@@ -80,6 +80,7 @@ page 80301 CustomerSVATSettelment
                     CustomerLedgerEntry: Record "Cust. Ledger Entry";
                     UserSetUp: Record "User Setup";
                     noseries: Codeunit NoSeriesManagement;
+                    SalesAndReciveSetup: Record "Sales & Receivables Setup";
                 begin
                     UserSetUp.SetRange("User ID", UserId);
                     if UserSetUp.FindFirst() then
@@ -87,7 +88,9 @@ page 80301 CustomerSVATSettelment
                             CustomerLedgerEntry.SetRange("Entry No.", Rec."Customer Ledger Entry no");
                             if CustomerLedgerEntry.FindFirst() then begin
                                 CustomerLedgerEntry."SVAT Credit Voucher Created" := true;
-                                noseries.InitSeries('SVAT-DR-VO', xRec."No. Series Voucher", 0D, Rec."SVAT Debit Voucher No.", Rec."No. Series Voucher");
+                                SalesAndReciveSetup.Get();
+                                SalesAndReciveSetup.TestField("SVAT Debit Nos");
+                                noseries.InitSeries(SalesAndReciveSetup."SVAT Debit Nos", xRec."No. Series Voucher", 0D, Rec."SVAT Debit Voucher No.", Rec."No. Series Voucher");
                                 CustomerLedgerEntry."SVAT Debit Voucher No." := Rec."SVAT Debit Voucher No.";
                                 CustomerLedgerEntry.Modify();
                                 Message('Voucher has been Created Successfully Voucher No: %1 , Document No:  %2', Rec."SVAT Debit Voucher No.", Rec."Docuemt No");
@@ -109,11 +112,14 @@ page 80301 CustomerSVATSettelment
                 begin
                     CustLedgerEntryRec.SetRange("Entry No.", Rec."Customer Ledger Entry no");
                     if CustLedgerEntryRec.FindFirst() then begin
-                        CustLedgerEntry.Copy(CustLedgerEntryRec);
-                        CustEntryApplyPostEntries.ApplyCustEntryFormEntry(CustLedgerEntry);
-                        CustLedgerEntry.Get(CustLedgerEntry."Entry No.");
-                        CustLedgerEntryRec := CustLedgerEntry;
-                        CustLedgerEntryPage.Update();
+                        if Rec."SVAT Debit Voucher No." <> '' then begin
+                            CustLedgerEntry.Copy(CustLedgerEntryRec);
+                            CustEntryApplyPostEntries.ApplyCustEntryFormEntry(CustLedgerEntry);
+                            CustLedgerEntry.Get(CustLedgerEntry."Entry No.");
+                            CustLedgerEntryRec := CustLedgerEntry;
+                            CustLedgerEntryPage.Update();
+                        end else
+                            Message('Befour Apply Entries, Create the Debit SVAT Voucher for the entry.');
                     end;
                 end;
             }

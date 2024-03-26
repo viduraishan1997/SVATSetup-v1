@@ -53,7 +53,7 @@ page 80300 "Vendor SVAT Settelment"
                 {
                     ApplicationArea = All;
                 }
-                field("No."; Rec."No.")
+                field("SVAT Credit Voucher No."; Rec."SVAT Credit Voucher No.")
                 {
                     ApplicationArea = All;
                 }
@@ -76,6 +76,7 @@ page 80300 "Vendor SVAT Settelment"
                     VendorLedgerEntry: Record "Vendor Ledger Entry";
                     UserSetup: Record "User Setup";
                     noseries: Codeunit NoSeriesManagement;
+                    PurchAndPaybleSetup: Record "Purchases & Payables Setup";
                 begin
                     UserSetup.SetRange("User ID", UserId);
                     if UserSetup.FindFirst() then begin
@@ -83,10 +84,12 @@ page 80300 "Vendor SVAT Settelment"
                             VendorLedgerEntry.SetRange("Entry No.", Rec."Vendor Ledger Entry no");
                             if VendorLedgerEntry.FindFirst() then begin
                                 VendorLedgerEntry."SVAT Credit Voucher Created" := true;
-                                noseries.InitSeries('SVAT-CRD-VO', xRec."No. Series Voucher", 0D, Rec."No.", Rec."No. Series Voucher");
-                                VendorLedgerEntry."SVAT Credit Voucher No." := Rec."No.";
+                                PurchAndPaybleSetup.Get();
+                                PurchAndPaybleSetup.TestField("SVAT Credit Voucher");
+                                noseries.InitSeries(PurchAndPaybleSetup."SVAT Credit Voucher", xRec."No. Series Voucher", 0D, Rec."SVAT Credit Voucher No.", Rec."No. Series Voucher");
+                                VendorLedgerEntry."SVAT Credit Voucher No." := Rec."SVAT Credit Voucher No.";
                                 VendorLedgerEntry.Modify();
-                                Message('Voucher has been Created Successfully Voucher No: %1 , Document No:  %2', Rec."No.", Rec."Docuemt No");
+                                Message('Voucher has been Created Successfully Voucher No: %1 , Document No:  %2', Rec."SVAT Credit Voucher No.", Rec."Docuemt No");
                             end;
                         end else
                             Message('User Are not Allowed to use this action');
@@ -103,14 +106,18 @@ page 80300 "Vendor SVAT Settelment"
                     VendLedgEntryRec, VendorLedgerEntry : Record "Vendor Ledger Entry";
                     VendorLedgerEntryPage: Page "Vendor Ledger Entries";
                     VendEntryApplyPostEntries: Codeunit "VendEntry-Apply Posted Entries";
+
                 begin
                     VendLedgEntryRec.SetRange("Entry No.", Rec."Vendor Ledger Entry no");
                     if VendLedgEntryRec.FindFirst() then begin
-                        VendorLedgerEntry.Copy(VendLedgEntryRec);
-                        VendEntryApplyPostEntries.ApplyVendEntryFormEntry(VendorLedgerEntry);
-                        VendorLedgerEntry.Get(VendorLedgerEntry."Entry No.");
-                        VendLedgEntryRec := VendorLedgerEntry;
-                        VendorLedgerEntryPage.Update();
+                        if Rec."SVAT Credit Voucher No." <> '' then begin
+                            VendorLedgerEntry.Copy(VendLedgEntryRec);
+                            VendEntryApplyPostEntries.ApplyVendEntryFormEntry(VendorLedgerEntry);
+                            VendorLedgerEntry.Get(VendorLedgerEntry."Entry No.");
+                            VendLedgEntryRec := VendorLedgerEntry;
+                            VendorLedgerEntryPage.Update();
+                        end else
+                            Message('Befour Apply Entries, Create the Credit SVAT Voucher for the entry.');
                     end;
                 end;
             }
