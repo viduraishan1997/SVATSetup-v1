@@ -7,6 +7,4 @@ tableextension 80310 UserSetupExt extends "User Setup"
             DataClassification = ToBeClassified;
         }
     }
-
-
 }

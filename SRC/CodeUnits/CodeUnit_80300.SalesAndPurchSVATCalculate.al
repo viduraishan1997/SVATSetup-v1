@@ -112,7 +112,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         CustomerLedgerEntry.SetRange("Document No.", Rec."No.");
         if CustomerLedgerEntry.FindFirst() then begin
-            CustomerLedgerEntry."Calculated SVAT amount" := Rec."Calculated SVAT Amount1";
+            CustomerLedgerEntry."Calculated SVAT amount" := Rec."Calculated SVAT Amount";
             CustomerLedgerEntry.Modify(true);
         end;
     end;
@@ -124,7 +124,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         SalesHeader.SetRange("No.", Rec."Pre-Assigned No.");
         if SalesHeader.FindFirst() then
-            Rec."Calculated SVAT Amount1" := SalesHeader."Calculated SVAT amount";
+            Rec."Calculated SVAT Amount" := SalesHeader."Calculated SVAT amount";
     end;
     // Calculate SVAT Amount in Posted Sales Invoice (Order)
     [EventSubscriber(ObjectType::Table, Database::"Sales Invoice Header", 'OnBeforeModifyEvent', '', false, false)]
@@ -134,7 +134,7 @@ codeunit 80300 SalesAndPurchSVATCalculate
     begin
         SalesHeader.SetRange("No.", Rec."Order No.");
         if SalesHeader.FindFirst() then
-            Rec."Calculated SVAT Amount1" := SalesHeader."Calculated SVAT amount";
+            Rec."Calculated SVAT Amount" := SalesHeader."Calculated SVAT amount";
     end;
     // [EventSubscriber(ObjectType::Table, Database::"Sales Header", 'OnAfterInsertEvent', '', false, false)]
     // local procedure GetSVATAmountPostedSalesInvoice(var Rec: Record "Sales Header")

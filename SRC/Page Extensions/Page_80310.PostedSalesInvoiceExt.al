@@ -4,7 +4,7 @@ pageextension 80310 PostedSalesInvoiceExt extends "Posted Sales Invoice"
     {
         addafter(Closed)
         {
-            field("Calculated SVAT Amount"; Rec."Calculated SVAT Amount1")
+            field("Calculated SVAT Amount"; Rec."Calculated SVAT Amount")
             {
                 ApplicationArea = All;
             }
