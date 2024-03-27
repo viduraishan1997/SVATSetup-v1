@@ -2,7 +2,7 @@ tableextension 80309 "Sales&RecivableSetupExt" extends "Sales & Receivables Setu
 {
     fields
     {
-        field(10001; "SVAT Debit Nos"; Code[20])
+        field(80300; "SVAT Debit Nos"; Code[20])
         {
             DataClassification = ToBeClassified;
             TableRelation = "No. Series";

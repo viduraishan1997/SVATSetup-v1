@@ -2,7 +2,7 @@ tableextension 80300 TaxDetailsExt extends "Tax Detail"
 {
     fields
     {
-        field(10001; "SVAT %"; Decimal)
+        field(80300; "SVAT %"; Decimal)
         {
             DataClassification = ToBeClassified;
         }
